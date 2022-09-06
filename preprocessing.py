@@ -39,15 +39,15 @@ def split():
 
     for i in range(len(contours)):
         x, y, w, h = cv2.boundingRect(contours[i])
-        shape, tile = np.zeros(puzzle.shape[:2]), np.zeros((300,300,4), 'uint8')
+        shape, piece = np.zeros(puzzle.shape[:2]), np.zeros((300,300,4), 'uint8')
         cv2.drawContours(shape, [contours[i]], -1, color=1, thickness=-1)
         shape = (puzzle * shape[:,:,None])[y:y+h,x:x+w,:]
-        tile[(300-h)//2:(300-h)//2+h,(300-w)//2:(300-w)//2+w] = shape
-        pieces.append(tile)
+        piece[(300-h)//2:(300-h)//2+h,(300-w)//2:(300-w)//2+w] = shape
+        pieces.append(piece)
         piece_center.append((h//2+y, w//2+x))
 
     canvas_pieces = []
     for i in range(len(pieces)):
-        canvas_tile = np.zeros((1400,1400,4), 'uint8')
-        canvas_tile[550:850, 550:850] = pieces[i].copy()
-        canvas_pieces.append(canvas_tile)
+        canvas_piece = np.zeros((1400,1400,4), 'uint8')
+        canvas_piece[550:850, 550:850] = pieces[i].copy()
+        canvas_pieces.append(canvas_piece)
