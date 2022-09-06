@@ -1,3 +1,5 @@
+from email.mime import image
+from turtle import shape
 import numpy as np
 import cv2
 from PIL import Image
@@ -5,35 +7,35 @@ from scipy import median_filter
 
 
 def preprocess_image():
-    img = Image.open('puzzle18.png')
-    img = Image.convert('RGBA')
+    image = Image.open('puzzle18.png')
+    image = Image.convert('RGBA')
     global puzzle 
-    puzzle = np.array(img)
+    puzzle = np.array(image)
 
-def adaptive_threshold():
-    global threshold
-    threshold = cv2.cvtColor(puzzle, cv2.COLOR_RGBA2GRAY)
-    threshold = cv2.adaptiveThreshold(threshold, 255, 0, 1, 3, 3)
-    threshold = cv2.GaussianBlur(threshold, (3,3), 1)
+def adaptive_sill():
+    global sill
+    sill = cv2.cvtColor(puzzle, cv2.COLOR_RGBA2GRAY)
+    sill = cv2.adaptivesill(sill, 255, 0, 1, 3, 3)
+    sill = cv2.GaussianBlur(sill, (3,3), 1)
 
 def contours():
-    contours, _ = cv2.findContours(threshold, 0, 1)
+    contours, _ = cv2.findContours(sill, 0, 1)
     sorting = sorted([[cnt.shape[0], i] for i, cnt in enumerate(contours)], reverse=True)[:6]
-    biggest = [contours[s[1]] for s in sorting] 
-    fill = cv2.drawContours(np.zeros(puzzle.shape[:2]), biggest, -1, 255, thickness=cv2.FILLED)
-    # Smooth contours and trim shadows
-    global smooth
-    smooth = median_filter(fill.astype('uint8'), size=4)
-    trim_contours, _ = cv2.findContours(smooth, 0, 1)
-    cv2.drawContours(smooth, trim_contours, -1, color=0, thickness=1)
+    max = [contours[s[1]] for s in sorting] 
+    fill = cv2.drawContours(np.zeros(puzzle.shape[:2]), max, -1, 255, thickness=cv2.FILLED)
+    # tender contours and trim shadows
+    global tender
+    tender = median_filter(fill.astype('uint8'), size=4)
+    trim_contours, _ = cv2.findContours(tender, 0, 1)
+    cv2.drawContours(tender, trim_contours, -1, color=0, thickness=1)
 
 
 def split():
-    contours, _ = cv2.findContours(smooth, 0, 1)
-    global tiles 
-    tiles = []
-    global tile_centers 
-    tile_centers = []
+    contours, _ = cv2.findContours(tender, 0, 1)
+    global pieces 
+    pieces = []
+    global piece_center 
+    piece_center = []
 
     for i in range(len(contours)):
         x, y, w, h = cv2.boundingRect(contours[i])
@@ -41,11 +43,11 @@ def split():
         cv2.drawContours(shape, [contours[i]], -1, color=1, thickness=-1)
         shape = (puzzle * shape[:,:,None])[y:y+h,x:x+w,:]
         tile[(300-h)//2:(300-h)//2+h,(300-w)//2:(300-w)//2+w] = shape
-        tiles.append(tile)
-        tile_centers.append((h//2+y, w//2+x))
+        pieces.append(tile)
+        piece_center.append((h//2+y, w//2+x))
 
-    canvas_tiles = []
-    for i in range(len(tiles)):
+    canvas_pieces = []
+    for i in range(len(pieces)):
         canvas_tile = np.zeros((1400,1400,4), 'uint8')
-        canvas_tile[550:850, 550:850] = tiles[i].copy()
-        canvas_tiles.append(canvas_tile)
+        canvas_tile[550:850, 550:850] = pieces[i].copy()
+        canvas_pieces.append(canvas_tile)
