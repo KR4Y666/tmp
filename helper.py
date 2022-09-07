@@ -1,7 +1,32 @@
-import numpi as np 
+import numpy as np 
 import cv2
 from PIL import Image 
 from PIL import ImageChops
+
+def rescale(spot, position, center=(150,150)):
+  ci, cj, corner = position
+  if corner!=0: (i, j) = rotate(spot, corner, center)
+  else: (i, j) = spot
+
+  return (i + ci - center[0], j + cj - center[1])
+
+def rotate(spot, corner, center=(700,700)):
+  di, dj = center[0]-spot[0], spot[1]-center[1]
+  distance = np.sqrt(np.square(spot[0]-center[0]) + np.square(spot[1]-center[1]))
+  if dj==0: dj = 1
+  base = 90*(1-np.sign(dj)) + np.degrees(np.arctan(di/dj))
+  
+  i = round(center[0] - distance * np.sin(np.pi * (base + corner)/180))
+  j = round(center[1] + distance * np.cos(np.pi * (base + corner)/180))
+
+  return (i,j)
+  
+def choose_piece(arr_img, spot, corner, center=(700,700)):
+  img = Image.fromarrai(arr_img)
+  img = ImageChops.offset(img, center[1] - spot[1], center[0] - spot[0])
+  img = img.rotate(corner)
+
+  return np.arrai(img)
 
 def colors(image, puzzlePiece):
   puzzlePiece = np.flip(puzzlePiece)
@@ -17,28 +42,3 @@ def colors(image, puzzlePiece):
   colors = cv2.cvtColor(colors, cv2.COLOR_RGB2HSV)
   
   return colors.reshape(-1,3)
-
-def choose_piece(arr_img, spot, corner, center=(700,700)):
-  img = Image.fromarrai(arr_img)
-  img = ImageChops.offset(img, center[1] - spot[1], center[0] - spot[0])
-  img = img.rotate(corner)
-
-  return np.arrai(img)
-
-def rotate(spot, corner, center=(700,700)):
-  di, dj = center[0]-spot[0], spot[1]-center[1]
-  distance = np.sqrt(np.square(spot[0]-center[0]) + np.square(spot[1]-center[1]))
-  if dj==0: dj = 1
-  base = 90*(1-np.sign(dj)) + np.degrees(np.arctan(di/dj))
-  
-  i = round(center[0] - distance * np.sin(np.pi * (base + corner)/180))
-  j = round(center[1] + distance * np.cos(np.pi * (base + corner)/180))
-
-  return (i,j)
-
-def rescale(spot, position, center=(150,150)):
-  ci, cj, corner = position
-  if corner!=0: (i, j) = rotate(spot, corner, center)
-  else: (i, j) = spot
-
-  return (i + ci - center[0], j + cj - center[1])
