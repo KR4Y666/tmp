@@ -40,11 +40,11 @@ for i in range(len(contours)):
     pieces.append(piece)
     piece_center.append((h//2+y, w//2+x))
 
-canvas_pieces = []
+screen_pieces = []
 for i in range(len(pieces)):
-    canvas_piece = np.zeros((1400,1400,4), 'uint8')
-    canvas_piece[550:850, 550:850] = pieces[i].copy()
-    canvas_pieces.append(canvas_piece)
+    screen_piece = np.zeros((1400,1400,4), 'uint8')
+    screen_piece[550:850, 550:850] = pieces[i].copy()
+    screen_pieces.append(screen_piece)
 
 def matchpieces(A, B):
 
@@ -119,8 +119,8 @@ def matchpieces(A, B):
   fit_matches = []
   for n in range(len(color_matches)):
     (i, j), spotA, spotB, corner, fmatch, cmatch = color_matches[n]
-    a = choose_piece(canvas_pieces[A][:,:,3], rescale(spotA, [700,700,0]), 0)
-    b = choose_piece(canvas_pieces[B][:,:,3], rescale(spotB, [700,700,0]), corner)
+    a = choose_piece(screen_pieces[A][:,:,3], rescale(spotA, [700,700,0]), 0)
+    b = choose_piece(screen_pieces[B][:,:,3], rescale(spotB, [700,700,0]), corner)
     loss = 1 - (np.sum((a+b)>0) / (np.sum(a>0) + np.sum(b>0)))
     contours, _ = cv2.findContours((a+b), 0, 1)
     fit = contours[0].shape[0] / sumLen
